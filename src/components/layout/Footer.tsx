@@ -6,10 +6,13 @@ import { usePathname } from "next/navigation";
 export default function Footer() {
 
 
-  const pathname = usePathname()
+  const pathname = usePathname();
+  const pathSegments = pathname?.split("/") || [];
+  const isAdminPage = pathSegments[1] === "admin" || pathSegments[2] === "admin";
 
-  if(pathname.startsWith("/admin")) {
-    return null
+  // যদি অ্যাডমিন পেজ হয়, তবে ফুটার হাইড করে দিবে
+  if (isAdminPage) {
+    return null;
   }
 
   return (

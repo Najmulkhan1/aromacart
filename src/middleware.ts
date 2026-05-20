@@ -12,6 +12,7 @@ export default createMiddleware({
 });
  
 export const config = {
-  // Middleware কোথায় কোথায় কাজ করবে তা বলে দেওয়া হলো (API এবং স্ট্যাটিক ফাইল বাদে)
-  matcher: ['/', '/(bn|en)/:path*']
+  // এটি api, _next এবং স্ট্যাটিক ফাইল বাদে ওয়েবসাইটের যেকোনো রিকোয়েস্টকে ক্যাচ করবে
+  // ফলে ভুল লিংকে গেলেও সেটি 404 পেজে রিডাইরেক্ট হবে
+  matcher: ['/((?!api|_next|_vercel|.*\\..*).*)']
 };

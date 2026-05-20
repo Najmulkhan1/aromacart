@@ -4,7 +4,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 
-const categories = ["Best Sellers", "New Arrivals", "Gift Sets"];
 const scentFamilies = ["Floral", "Woody", "Oriental", "Fresh", "Citrus", "Spicy"];
 const genders = ["Men", "Women", "Unisex"];
 

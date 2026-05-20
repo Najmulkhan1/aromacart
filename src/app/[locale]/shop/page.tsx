@@ -1,7 +1,7 @@
 import { Suspense } from "react";
-import ShopLoading from "./loading"; // আপনার তৈরি করা স্কেলিটন ফাইলটি ইম্পোর্ট করা হলো
+import ShopLoading from "./loading";
 import { ProductFilters } from "@/components/shop/ProductFilters";
-import { ProductCard } from "@/components/shop/ProductCard";
+
 import {
   Select,
   SelectContent,
@@ -12,47 +12,48 @@ import {
 import { SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const shopProducts = [
-  { id: 1, title: "Oud Wood Intense", price: "৳ 12,500", category: "Woody" },
-  { id: 2, title: "Rose Noir", price: "৳ 8,900", category: "Floral" },
-  { id: 3, title: "Citrus Grove", price: "৳ 6,500", category: "Citrus" },
-  { id: 4, title: "Midnight Amber", price: "৳ 10,200", category: "Oriental" },
-  { id: 5, title: "Ocean Breeze", price: "৳ 5,500", category: "Fresh" },
-  { id: 6, title: "Spiced Vanilla", price: "৳ 7,800", category: "Spicy" },
-];
+// ডাটাবেস কানেকশনের জন্য ইম্পোর্ট
+import connectDB from "@/lib/db";
+import Product from "@/models/Product";
+import { ProductCard } from "@/components/shop/ProductCard";
 
-// ১. মূল ডাটা ফেচিং কম্পোনেন্ট (এটি সার্ভারে রেন্ডার হবে এবং ২ সেকেন্ড সময় নেবে)
-async function ShopContent() {
-  // ডাটাবেস থেকে ডাটা আসার ফিল দেওয়ার জন্য ২ সেকেন্ডের ফেক ডিলে
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+// ১. মূল ডাটা ফেচিং কম্পোনেন্ট (এটি সরাসরি ডাটাবেস থেকে রিয়েল-টাইম ডাটা আনবে)
+async function ShopContent({ locale }: { locale: string }) {
+  // ডাটাবেস কানেক্ট করা হচ্ছে
+  await connectDB();
+
+  // ড্রাফট (Draft) অবস্থায় নেই এমন সব প্রোডাক্ট ডাটাবেস থেকে আনা হচ্ছে
+  const products = await Product.find({ status: { $ne: "Draft" } }).sort({ createdAt: -1 });
 
   return (
     <div className="container mx-auto px-4 py-12">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight text-foreground">All Perfumes</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-foreground">
+            {locale === "bn" ? "সব পারফিউম" : "All Perfumes"}
+          </h1>
           <p className="text-muted-foreground mt-2">
-            Explore our exclusive collection of {shopProducts.length} luxury fragrances.
+            {locale === "bn"
+              ? `আমাদের এক্সক্লুসিভ কালেকশন থেকে আপনার পছন্দের সুগন্ধি বেছে নিন। (মোট ${products.length}টি)`
+              : `Explore our exclusive collection of ${products.length} luxury fragrances.`}
           </p>
         </div>
 
         <div className="flex items-center gap-4 w-full md:w-auto">
-          <Button variant="outline" className="md:hidden flex-1">
+          <Button variant="outline" className="md:hidden flex-1 rounded-xl">
             <SlidersHorizontal className="mr-2 h-4 w-4" />
-            Filters
+            {locale === "bn" ? "ফিল্টার" : "Filters"}
           </Button>
 
           <Select defaultValue="newest">
-            <SelectTrigger className="w-full md:w-[200px]">
+            <SelectTrigger className="w-full md:w-[200px] rounded-xl">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="newest">Newest Arrivals</SelectItem>
-              <SelectItem value="best-seller">Best Sellers</SelectItem>
               <SelectItem value="price-low">Price: Low to High</SelectItem>
               <SelectItem value="price-high">Price: High to Low</SelectItem>
-              <SelectItem value="top-rated">Top Rated</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -65,26 +66,43 @@ async function ShopContent() {
         </aside>
 
         {/* Product Grid */}
-        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {shopProducts.map((product) => (
-            <ProductCard 
-              key={product.id} 
-              title={product.title} 
-              price={product.price} 
-              category={product.category} 
-            />
-          ))}
+        <div className="flex-1">
+          {products.length === 0 ? (
+            <div className="h-60 flex flex-col items-center justify-center text-muted-foreground border border-dashed rounded-2xl">
+              <p className="text-lg">No products available yet.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {products.map((product) => (
+    <ProductCard 
+      key={product._id.toString()} 
+      title={locale === "bn" ? product.nameBn : product.nameEn} 
+      price={`৳ ${product.regularPrice.toLocaleString()}`} 
+      category={product.scentFamily} 
+      href={`/${locale}/shop/${product.slug}`} 
+      image={product.images?.[0]} // ডাটাবেসের প্রথম ইমেজটি পাঠানো হচ্ছে
+    />
+  ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-// ২. মেইন পেজ: এখানে Suspense ব্যবহার করে স্কেলিটন দেখানো হচ্ছে
-export default function ShopPage() {
+// ২. মেইন পেজ কম্পোনেন্ট
+interface ShopPageProps {
+  params: { locale: string };
+}
+
+export default async function ShopPage({ params }: ShopPageProps) {
+  // Next.js 14-এর নতুন নিয়ম অনুযায়ী params কে await করে নেওয়া হলো
+  const { locale } = await params;
+
   return (
     <Suspense fallback={<ShopLoading />}>
-      <ShopContent />
+      <ShopContent locale={locale} />
     </Suspense>
   );
 }

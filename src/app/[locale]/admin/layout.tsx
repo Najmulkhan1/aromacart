@@ -12,11 +12,11 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Button } from "@/components/ui/button";
 
 const sidebarLinks = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/products", label: "Products", icon: Package },
-  { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
-  { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/cms", label: "Landing Editor", icon: LayoutTemplate },
+  { href: "/en/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/en/admin/products", label: "Products", icon: Package },
+  { href: "/en/admin/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/en/admin/users", label: "Users", icon: Users },
+  { href: "/en/admin/cms", label: "Landing Editor", icon: LayoutTemplate },
 ];
 
 export default function AdminLayout({

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, UploadCloud, Save } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import ImageUpload from "@/components/admin/ImageUpload";
 
 export default function AddProductPage() {
   const router = useRouter();
@@ -37,6 +38,7 @@ export default function AddProductPage() {
     topNotes: "",
     heartNotes: "",
     baseNotes: "",
+    images: [] as string[],
     size30: false,
     price30: "",
     size50: false,
@@ -87,6 +89,7 @@ export default function AddProductPage() {
       slug: formData.slug || undefined, // খালি থাকলে ব্যাকএন্ড নিজে জেনারেট করবে
       descriptionEn: formData.descriptionEn,
       descriptionBn: formData.descriptionBn,
+      images: formData.images,
       regularPrice: Number(formData.regularPrice),
       compareAtPrice: formData.compareAtPrice ? Number(formData.compareAtPrice) : undefined,
       totalStock: Number(formData.totalStock),
@@ -115,10 +118,10 @@ export default function AddProductPage() {
       }
 
       // সফলভাবে সেভ হলে প্রোডাক্ট লিস্ট পেজে রিডাইরেক্ট করবে
-      router.push("/admin/products");
+      router.push("/en/admin/products");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -130,7 +133,7 @@ export default function AddProductPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="icon" className="rounded-xl" asChild type="button">
-            <Link href="/admin/products">
+            <Link href="/en/admin/products">
               <ChevronLeft className="w-5 h-5" />
             </Link>
           </Button>
@@ -182,6 +185,21 @@ export default function AddProductPage() {
             </CardContent>
           </Card>
 
+          {/* Product Images Card (নতুন যুক্ত করা হলো) */}
+          <Card className="rounded-2xl border-border shadow-sm">
+            <CardHeader>
+              <CardTitle>Product Images</CardTitle>
+              <CardDescription>Upload high-quality images of the fragrance.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ImageUpload 
+                value={formData.images} 
+                onChange={(url) => setFormData(prev => ({ ...prev, images: [...prev.images, url] }))} 
+                onRemove={(url) => setFormData(prev => ({ ...prev, images: prev.images.filter(img => img !== url) }))} 
+              />
+            </CardContent>
+          </Card>
+
           {/* Pricing & Stock Card */}
           <Card className="rounded-2xl border-border shadow-sm">
             <CardHeader>
@@ -226,6 +244,7 @@ export default function AddProductPage() {
               </div>
             </CardContent>
           </Card>
+          
         </div>
 
         {/* Right Column: Organization & Notes */}

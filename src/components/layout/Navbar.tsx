@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation"; // রাউটিংয়ের জন্য
+import { usePathname, useRouter } from "next/navigation"; // রাউটিংয়ের জন্য
 import { useTranslations } from "next-intl"; // ট্রান্সলেশনের হুক
 import { Search, ShoppingBag, Heart, User, Menu, X } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
@@ -19,11 +19,11 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   
-  // JSON ফাইল থেকে ডাটা পড়ার জন্য হুক ব্যবহার করছি
+  // JSON ফাইল থেকে ডাটা পড়ার জন্য হুক ব্যবহার করছি
   const t = useTranslations("Navbar");
 
-  // বর্তমান ভাষা (locale) বের করার লজিক
-  const currentLocale = pathname.split("/")[1] || "en";
+  // 404 পেজে pathname null হতে পারে, তাই '?' যুক্ত করা হয়েছে
+  const currentLocale = pathname?.split("/")[1] || "en";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -35,16 +35,21 @@ export default function Navbar() {
   const handleLanguageChange = (newLocale: string) => {
     if (newLocale === currentLocale) return;
     
-    const segments = pathname.split("/");
+    // pathname null হলে ডিফল্ট অ্যারে ব্যবহার করবে
+    const segments = pathname?.split("/") || ["", currentLocale];
     segments[1] = newLocale; // URL-এর প্রথমাংশ (en/bn) পরিবর্তন করা হচ্ছে
     
     router.push(segments.join("/"));
   };
 
-  if (pathname.startsWith("/admin") || pathname.includes("/admin/")) {
+  // অ্যাডমিন প্যানেলে ন্যাভবার হাইড করা, '?' যুক্ত করা হয়েছে ক্র্যাশ এড়াতে
+  // URL-এর অংশগুলো ভাগ করে চেক করা হচ্ছে এটি অ্যাডমিন পেজ কি না
+  const pathSegments = pathname?.split("/") || [];
+  const isAdminPage = pathSegments[1] === "admin" || pathSegments[2] === "admin";
+
+  if (isAdminPage) {
     return null;
   }
-
   // ডাইনামিক ন্যাভ লিংকস
   const navLinks = [
     { href: `/${currentLocale}/shop`, label: t("shop") },

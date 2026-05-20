@@ -16,15 +16,18 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
 
     // কোয়েরি অবজেক্ট তৈরি
-    let query: any = {};
+    const query: Record<string, unknown> = {};
     
     if (scentFamily) {
       query.scentFamily = scentFamily;
     }
-    if (status) {
+    
+    // 👇 এখানে মূল পরিবর্তনটি করা হয়েছে
+    if (status && status !== "all") {
+      // যদি status থাকে এবং সেটি 'all' না হয়, তবেই ফিল্টার করবে
       query.status = status;
-    } else {
-      // সাধারণ ইউজারদের জন্য শুধু Active প্রোডাক্ট দেখাবো, অ্যাডমিন প্যানেল থেকে ফিল্টার আলাদা হবে
+    } else if (!status) {
+      // যদি status প্যারামিটার না থাকে (যেমন শপ পেজে), তখন ড্রাফট বাদে সব দেখাবে
       query.status = { $ne: "Draft" }; 
     }
 
@@ -32,9 +35,10 @@ export async function GET(request: NextRequest) {
     const products = await Product.find(query).sort({ createdAt: -1 });
 
     return NextResponse.json({ success: true, data: products }, { status: 200 });
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Server Error";
     return NextResponse.json(
-      { success: false, error: error.message || "Server Error" },
+      { success: false, error: message },
       { status: 500 }
     );
   }
@@ -66,10 +70,11 @@ export async function POST(request: NextRequest) {
       { success: true, message: "Product created successfully!", data: newProduct },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("MongoDB API Error: ", error); // <--- টার্মিনালে আসল এররটি প্রিন্ট করার জন্য
+    const message = error instanceof Error ? error.message : "Failed to create product";
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to create product" },
+      { success: false, error: message },
       { status: 500 }
     );
   }
