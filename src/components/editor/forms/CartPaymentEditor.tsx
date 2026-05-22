@@ -23,7 +23,7 @@ export default function CartPaymentEditor({ content, updateContent }: Props) {
             value={content?.methods?.join("\n") || ""}
             onChange={e => updateContent({ methods: e.target.value.split("\n").filter(Boolean) })}
             rows={4}
-            className="font-mono text-sm"
+            className="font-mono text-sm text-gray-600"
             placeholder="Cash on Delivery&#10;bKash&#10;Nagad"
           />
         </div>
@@ -40,6 +40,7 @@ export default function CartPaymentEditor({ content, updateContent }: Props) {
               <Label className="text-sm font-semibold text-gray-700 block mb-1">Delivery Charge (BDT)</Label>
               <Input
                 type="number"
+                className="text-gray-600"
                 value={content?.deliveryCharge ?? 60}
                 onChange={e => updateContent({ deliveryCharge: parseInt(e.target.value) || 0 })}
               />
@@ -48,6 +49,7 @@ export default function CartPaymentEditor({ content, updateContent }: Props) {
               <Label className="text-sm font-semibold text-gray-700 block mb-1">Free Delivery Over (BDT)</Label>
               <Input
                 type="number"
+                className="text-gray-600"
                 value={content?.freeDeliveryOver ?? 2000}
                 onChange={e => updateContent({ freeDeliveryOver: parseInt(e.target.value) || 0 })}
               />
@@ -58,6 +60,7 @@ export default function CartPaymentEditor({ content, updateContent }: Props) {
             <Input
               type="number"
               step="0.5"
+              className="text-gray-600"
               value={content?.taxRate ?? 5}
               onChange={e => updateContent({ taxRate: parseFloat(e.target.value) || 0 })}
             />
