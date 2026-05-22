@@ -7,6 +7,9 @@ import { PageSection } from "@/types/editor.types";
 import HeroEditor from "./forms/HeroEditor";
 import ProductsEditor from "./forms/ProductsEditor";
 import CartPaymentEditor from "./forms/CartPaymentEditor";
+import FaqEditor from "./forms/FaqEditor";
+import GalleryEditor from "./forms/GalleryEditor";
+import TestimonialEditor from "./forms/TestimonialEditor";
 
 interface Props {
   currentEditing: PageSection;
@@ -72,7 +75,12 @@ export default function EditorModal({ currentEditing, onClose, updateContent }: 
               )}
 
               {/* যে সেকশনগুলোর এডিটর এখনো বানানো হয়নি, তাদের জন্য একটি মেসেজ */}
-              {!["hero", "products", "cartPayment"].includes(currentEditing.type) && (
+
+              {/* নতুন যুক্ত করা কম্পোনেন্টগুলো */}
+    {currentEditing.type === "faq" && <FaqEditor content={currentEditing.content} updateContent={handleUpdate} />}
+    {currentEditing.type === "gallery" && <GalleryEditor content={currentEditing.content} updateContent={handleUpdate} />}
+    {currentEditing.type === "testimonials" && <TestimonialEditor content={currentEditing.content} updateContent={handleUpdate} />}
+              {!["hero", "products", "cartPayment", "faq", "gallery", "testimonials"].includes(currentEditing.type) && (
                 <div className="text-center py-16">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Settings size={28} className="text-gray-400" />
