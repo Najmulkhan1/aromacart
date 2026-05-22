@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import { useCartStore } from "@/store/cartStore";
 import { bangladeshLocations, getDistricts, getUpazilas } from "@/lib/bangladesh-locations";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { useRouter, useParams } from "next/navigation";
 import {
   ChevronDown,
   Truck,
@@ -361,6 +364,15 @@ export default function CheckoutPage() {
   const { items,clearCart } = useCartStore();
   const total = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
+  const router = useRouter();
+  const params = useParams();
+  const currentLocale = (params?.locale as string) || "en";
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [step, setStep] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState<"cod" | "bkash" | "nagad">("cod");
 
@@ -391,20 +403,48 @@ const [isSubmitting, setIsSubmitting] = useState(false);
     trxId: ""
   });
 
-  // Reset dependent selects - deferred to avoid synchronous setState in effect
-  useEffect(() => {
-    const t = setTimeout(() => { setDistrict(""); setUpazila(""); }, 0);
-    return () => clearTimeout(t);
-  }, [division]);
-  useEffect(() => {
-    const t = setTimeout(() => setUpazila(""), 0);
-    return () => clearTimeout(t);
-  }, [district]);
-
   const districts = getDistricts(division).map((d) => d.name);
   const upazilas = getUpazilas(division, district);
 
   const canProceedStep1 = name && phone && division && district && upazila && address;
+
+  const isPaymentValid = 
+    paymentMethod === "cod" || 
+    (formData.senderNumber.trim().length > 0 && formData.trxId.trim().length > 0);
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-muted-foreground animate-pulse">Loading secure checkout...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="min-h-[80vh] flex flex-col items-center justify-center p-4 text-center">
+        <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+          <Package className="w-12 h-12 text-primary animate-pulse" />
+        </div>
+        <h2 className="text-2xl font-bold mb-2">
+          {currentLocale === "bn" ? "আপনার কার্ট খালি" : "Your Cart is Empty"}
+        </h2>
+        <p className="text-muted-foreground max-w-sm mb-8">
+          {currentLocale === "bn"
+            ? "চেকআউট করার আগে অনুগ্রহ করে আপনার কার্টে কিছু প্রোডাক্ট যোগ করুন।"
+            : "You don't have any items in your cart yet. Please add some premium fragrances before checking out."}
+        </p>
+        <Button asChild className="h-12 px-8 rounded-2xl font-bold shadow-lg">
+          <Link href={`/${currentLocale}/shop`}>
+            {currentLocale === "bn" ? "শপিং এ ফিরে যান" : "Return to Shop"}
+          </Link>
+        </Button>
+      </div>
+    );
+  }
 
 
   const handleConfirmOrder = async () => {
@@ -443,7 +483,7 @@ const [isSubmitting, setIsSubmitting] = useState(false);
       const data = await res.json();
       if (data.success) {
         clearCart();
-        window.location.href = `/en/thank-you?orderId=${data.orderId}`;
+        router.push(`/${currentLocale}/thank-you?orderId=${data.orderId}`);
       } else {
         alert("Something went wrong, please try again.");
       }
@@ -561,7 +601,11 @@ const [isSubmitting, setIsSubmitting] = useState(false);
                       <SelectField
                         label="Division"
                         value={division}
-                        onChange={setDivision}
+                        onChange={(val) => {
+                          setDivision(val);
+                          setDistrict("");
+                          setUpazila("");
+                        }}
                         options={bangladeshLocations.map((d) => d.name)}
                         placeholder="Select Division"
                         icon={<MapPin className="w-3.5 h-3.5" />}
@@ -569,7 +613,10 @@ const [isSubmitting, setIsSubmitting] = useState(false);
                       <SelectField
                         label="District"
                         value={district}
-                        onChange={setDistrict}
+                        onChange={(val) => {
+                          setDistrict(val);
+                          setUpazila("");
+                        }}
                         options={districts}
                         placeholder="Select District"
                         disabled={!division}
@@ -718,8 +765,9 @@ const [isSubmitting, setIsSubmitting] = useState(false);
                   </button>
                   <button
                     type="button"
+                    disabled={!isPaymentValid}
                     onClick={() => setStep(2)}
-                    className="flex-1 h-14 rounded-2xl bg-primary text-primary-foreground font-bold text-base flex items-center justify-center gap-2 shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30"
+                    className="flex-1 h-14 rounded-2xl bg-primary text-primary-foreground font-bold text-base flex items-center justify-center gap-2 shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
                   >
                     Review Order <ArrowRight className="w-5 h-5" />
                   </button>

@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState, useEffect, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation"; // useRouter ইমপোর্ট করা হলো
+import { useSearchParams, useRouter, useParams } from "next/navigation"; // useRouter ইমপোর্ট করা হলো
 import Link from "next/link";
 import { 
   CheckCircle2, Copy, ArrowRight, Package, Home, Check, 
@@ -14,14 +14,28 @@ import { Button } from "@/components/ui/button";
 function ThankYouContent() {
   const searchParams = useSearchParams();
   const router = useRouter(); // রাউটার ইনিশিয়ালাইজ করা হলো
+  const params = useParams();
+  const currentLocale = (params?.locale as string) || "en";
   const orderId = searchParams.get("orderId");
   
   const [copied, setCopied] = useState(false);
   const [animationStage, setAnimationStage] = useState(0); 
   const [bikePosition, setBikePosition] = useState(0);
   const [packingProgress, setPackingProgress] = useState(0);
+  const [particles, setParticles] = useState<{ left: string; top: string; duration: string; delay: string }[]>([]);
   const animationRef = useRef<number | null>(null);
   const startTimeRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setParticles(
+      Array.from({ length: 20 }).map(() => ({
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        duration: `${3 + Math.random() * 5}s`,
+        delay: `${Math.random() * 5}s`,
+      }))
+    );
+  }, []);
 
   // === সিকিউরিটি চেক: যদি orderId না থাকে, তবে হোম পেজে রিডাইরেক্ট করবে ===
   useEffect(() => {
@@ -98,15 +112,15 @@ function ThankYouContent() {
 
       {/* স্নো/পার্টিকল ইফেক্ট */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(20)].map((_, i) => (
+        {particles.map((p, i) => (
           <div
             key={i}
             className="absolute w-1 h-1 bg-white/20 rounded-full animate-float"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDuration: `${3 + Math.random() * 5}s`,
-              animationDelay: `${Math.random() * 5}s`,
+              left: p.left,
+              top: p.top,
+              animationDuration: p.duration,
+              animationDelay: p.delay,
             }}
           />
         ))}
@@ -350,12 +364,12 @@ function ThankYouContent() {
         {animationStage === 2 && (
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fadeIn">
             <Button asChild variant="outline" className="w-full sm:w-auto h-12 px-6 rounded-2xl border-white/20 bg-white/5 text-white hover:bg-white/10 font-semibold group transition-all duration-300">
-              <Link href="/" className="flex items-center">
+              <Link href={`/${currentLocale}`} className="flex items-center">
                 <Home className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" /> Back to Home
               </Link>
             </Button>
             <Button asChild className="w-full sm:w-auto h-12 px-8 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/40 transition-all hover:scale-[1.02] active:scale-95">
-              <Link href="/en/shop" className="flex items-center">
+              <Link href={`/${currentLocale}/shop`} className="flex items-center">
                 Continue Shopping <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Link>
             </Button>

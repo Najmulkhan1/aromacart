@@ -5,6 +5,7 @@ import { Heart, ShoppingBag, Minus, Plus, Check, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useCartStore } from "@/store/cartStore";
+import { useRouter } from "next/navigation";
 
 interface SizeVariant {
   size: string;
@@ -33,7 +34,21 @@ export function ProductInteractiveSection({
   const [quantity, setQuantity] = useState(1);
   const [wishlist, setWishlist] = useState(false);
   const [added, setAdded] = useState(false);
-  const { addItem } = useCartStore();
+  const { addItem, closeCart } = useCartStore();
+  const router = useRouter();
+
+  const handleBuyNow = () => {
+    addItem({
+      id: productInfo.id,
+      name: productInfo.name,
+      price: currentPrice,
+      quantity,
+      image: productInfo.image,
+      size: selectedSize?.size || "50ml",
+    });
+    closeCart();
+    router.push(`/${locale}/checkout`);
+  };
 
   const increment = () => setQuantity((q) => q + 1);
   const decrement = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
@@ -195,6 +210,7 @@ export function ProductInteractiveSection({
           size="lg"
           variant="outline"
           className="w-full h-14 rounded-2xl text-sm font-bold tracking-wide border-2"
+          onClick={handleBuyNow}
         >
           <Zap className="w-4 h-4 mr-2" />
           {locale === "bn" ? "এখনই কিনুন" : "Buy Now"}

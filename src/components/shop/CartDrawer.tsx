@@ -3,9 +3,13 @@
 import { X, ShoppingBag, Minus, Plus, Trash2, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/cartStore";
+import { useRouter, usePathname } from "next/navigation";
 
 export function CartDrawer() {
   const { isOpen, closeCart, items, removeItem, updateQuantity } = useCartStore();
+  const router = useRouter();
+  const pathname = usePathname();
+  const currentLocale = pathname?.split("/")[1] || "en";
 
   const total = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
@@ -88,7 +92,10 @@ export function CartDrawer() {
             <Button
               size="lg"
               className="w-full h-14 rounded-full text-lg shadow-xl"
-              onClick={() => { window.location.href = "/en/checkout"; }}
+              onClick={() => {
+                closeCart();
+                router.push(`/${currentLocale}/checkout`);
+              }}
             >
               Checkout Now
             </Button>
