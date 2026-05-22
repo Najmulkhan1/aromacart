@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { Eye, Undo, Redo } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -14,12 +14,14 @@ import SectionList from "@/components/editor/SectionList";
 import EditorModal from "@/components/editor/EditorModal";
 import LivePreview from "@/components/preview/LivePreview";
 
+
 export default function UltraProLandingPageBuilder() {
   // Theme State
   const [theme, setTheme] = useState<Theme>({
     primary: "#10b981", secondary: "#0f766e", background: "#ffffff",
     textColor: "#1e293b", headingColor: "#111827", accent: "#eab308", fontFamily: "Inter"
   });
+  const [isClient, setIsClient] = useState(false);
 
   // Editor History Hook (Replacing old sections & history useState)
   const {
@@ -28,10 +30,14 @@ export default function UltraProLandingPageBuilder() {
     undo,
     redo,
     canUndo,
-    canRedo
+    canRedo,
+    reset
   } = useEditorHistory<PageSection[]>([
     // আপনার initial sections array এখানে দিতে পারেন
   ]);
+
+  // 👉 ঠিক এখানে isPublishing স্টেটটি অ্যাড করবেন
+  const [isPublishing, setIsPublishing] = useState(false);
 
   // UI States
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -93,7 +99,72 @@ export default function UltraProLandingPageBuilder() {
     });
   };
 
+
+  // ১. ইনিশিয়াল লোড: পেজ রিলোড দিলে Local Storage থেকে ডেটা আনবে
+  useEffect(() => {
+    setIsClient(true);
+    const savedDraft = localStorage.getItem("probuilder_draft");
+    
+    if (savedDraft) {
+      try {
+        const { savedTheme, savedSections } = JSON.parse(savedDraft);
+        if (savedTheme) setTheme(savedTheme);
+        if (savedSections && savedSections.length > 0) {
+           reset(savedSections); // useEditorHistory এর হিস্ট্রি ক্লিয়ার করে নতুন ডেটা বসাবে
+        }
+      } catch (error) {
+        console.error("Error parsing local storage data", error);
+      }
+    }
+  }, [reset]);
+
+  // ২. অটো-সেভ: Theme বা Sections চেঞ্জ হলে ১ সেকেন্ড পর পর Local Storage আপডেট করবে
+  useEffect(() => {
+    if (!isClient) return; // সার্ভার সাইডে রেন্ডার হওয়া আটকাতে
+    
+    const timeout = setTimeout(() => {
+      localStorage.setItem("probuilder_draft", JSON.stringify({
+        savedTheme: theme,
+        savedSections: sections
+      }));
+    }, 1000); // Debouncing: একনাগাড়ে টাইপ করলে যেন বারবার সেভ না হয়
+
+    return () => clearTimeout(timeout);
+  }, [theme, sections, isClient]);
+
   const currentEditing = sections.find(s => s.id === editingId);
+
+  const handlePublish = async () => {
+    setIsPublishing(true);
+    
+    const pageData = {
+      pageId: "my-landing-page",
+      theme: theme,
+      sections: sections,
+      publishedAt: new Date().toISOString(),
+    };
+
+    try {
+      const response = await fetch("/api/pages/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pageData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("🎉 Page published successfully!");
+      } else {
+        alert(`Error: ${data.message || "Failed to publish"}`);
+      }
+    } catch (error) {
+      console.error("Publish error:", error);
+      alert("Something went wrong while publishing.");
+    } finally {
+      setIsPublishing(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white pb-20">
@@ -113,8 +184,13 @@ export default function UltraProLandingPageBuilder() {
           <Button variant="outline" size="sm" onClick={() => setShowPreview(!showPreview)}>
             <Eye size={16} className="mr-2"/> Preview
           </Button>
-          <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600">
-            🚀 Publish
+          <Button 
+            size="sm" 
+            onClick={handlePublish}
+            disabled={isPublishing}
+            className="bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-500/50"
+          >
+            {isPublishing ? "Publishing..." : "🚀 Publish"}
           </Button>
         </div>
       </div>

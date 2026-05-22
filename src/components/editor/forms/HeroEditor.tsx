@@ -25,16 +25,17 @@ export default function HeroEditor({ content, updateContent }: Props) {
             <Input
               value={content?.heading || ""}
               onChange={e => updateContent({ heading: e.target.value })}
-              className="w-full"
+              className="w-full text-gray-600"
               placeholder="Enter main heading"
             />
           </div>
           <div>
             <Label className="text-sm font-semibold text-gray-700 block mb-1">Subheading</Label>
             <Textarea
+            placeholder="Enter Your subheading"
               value={content?.subHeading || ""}
               onChange={e => updateContent({ subHeading: e.target.value })}
-              className="w-full"
+              className="w-full text-gray-600"
               rows={2}
             />
           </div>
@@ -42,11 +43,11 @@ export default function HeroEditor({ content, updateContent }: Props) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label className="text-sm font-semibold text-gray-700 block mb-1">Primary CTA Text</Label>
-              <Input value={content?.ctaText || ""} onChange={e => updateContent({ ctaText: e.target.value })} />
+              <Input placeholder="Enter Your primary CTA text" className="text-gray-600" value={content?.ctaText || ""} onChange={e => updateContent({ ctaText: e.target.value })} />
             </div>
             <div>
               <Label className="text-sm font-semibold text-gray-700 block mb-1">Primary CTA Link</Label>
-              <Input value={content?.ctaLink || ""} onChange={e => updateContent({ ctaLink: e.target.value })} />
+              <Input placeholder="Enter Your primary CTA link" className="text-gray-600" value={content?.ctaLink || ""} onChange={e => updateContent({ ctaLink: e.target.value })} />
             </div>
           </div>
         </div>
@@ -62,9 +63,10 @@ export default function HeroEditor({ content, updateContent }: Props) {
           <Label className="text-sm font-semibold text-gray-700 block mb-1">Image URL</Label>
           <div className="flex gap-3">
             <Input
+            placeholder="Enter Your Image URL"
               value={content?.bgImage || ""}
               onChange={e => updateContent({ bgImage: e.target.value })}
-              className="flex-1"
+              className="flex-1 text-gray-600"
             />
             <Button variant="outline" className="shrink-0"><Upload size={16} className="mr-2" /> Upload</Button>
           </div>

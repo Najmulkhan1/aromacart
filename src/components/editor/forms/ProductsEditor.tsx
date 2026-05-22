@@ -41,6 +41,7 @@ export default function ProductsEditor({ content, updateContent }: Props) {
             <Label className="text-sm font-semibold text-gray-700 block mb-1">Section Title</Label>
             <Input
               value={content?.sectionTitle || ""}
+              className="text-gray-600"
               onChange={e => updateContent({ sectionTitle: e.target.value })}
               placeholder="Featured Products"
             />
@@ -48,6 +49,7 @@ export default function ProductsEditor({ content, updateContent }: Props) {
           <div>
             <Label className="text-sm font-semibold text-gray-700 block mb-1">Section Subtitle</Label>
             <Input
+            className="text-gray-600"
               value={content?.sectionSubtitle || ""}
               onChange={e => updateContent({ sectionSubtitle: e.target.value })}
               placeholder="Best quality products for you"
@@ -79,15 +81,15 @@ export default function ProductsEditor({ content, updateContent }: Props) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label className="text-xs text-gray-500">Name</Label>
-                  <Input value={p.name} onChange={e => updateProduct(i, 'name', e.target.value)} className="text-sm" />
+                  <Input  value={p.name} onChange={e => updateProduct(i, 'name', e.target.value)} className="text-sm text-gray-600" />
                 </div>
                 <div>
                   <Label className="text-xs text-gray-500">Price (BDT)</Label>
-                  <Input type="number" value={p.price} onChange={e => updateProduct(i, 'price', parseInt(e.target.value) || 0)} className="text-sm" />
+                  <Input type="number" value={p.price} onChange={e => updateProduct(i, 'price', parseInt(e.target.value) || 0)} className="text-sm text-gray-600" />
                 </div>
                 <div className="col-span-2">
                   <Label className="text-xs text-gray-500">Image URL</Label>
-                  <Input value={p.image} onChange={e => updateProduct(i, 'image', e.target.value)} className="text-sm" />
+                  <Input placeholder="Enter Image URL" value={p.image} onChange={e => updateProduct(i, 'image', e.target.value)} className="text-sm text-gray-600" />
                 </div>
               </div>
             </div>
