@@ -1,7 +1,7 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LayoutIcon, Clock } from "lucide-react";
+import { LayoutIcon, Clock, Calendar } from "lucide-react"; // Calendar আইকন যুক্ত করা হলো
 
 interface Props {
   content: any;
@@ -21,6 +21,7 @@ export default function CountdownEditor({ content, updateContent }: Props) {
           <div>
             <Label className="text-sm font-semibold text-gray-700 block mb-1">Section Title</Label>
             <Input
+              className="text-gray-600"
               value={content?.sectionTitle || ""}
               onChange={e => updateContent({ sectionTitle: e.target.value })}
               placeholder="e.g. Flash Sale! Limited Time Offer"
@@ -29,6 +30,7 @@ export default function CountdownEditor({ content, updateContent }: Props) {
           <div>
             <Label className="text-sm font-semibold text-gray-700 block mb-1">Section Subtitle (Optional)</Label>
             <Input
+              className="text-gray-600"
               value={content?.sectionSubtitle || ""}
               onChange={e => updateContent({ sectionSubtitle: e.target.value })}
               placeholder="Grab your favorite products before the timer runs out."
@@ -45,12 +47,28 @@ export default function CountdownEditor({ content, updateContent }: Props) {
         </div>
         <div>
           <Label className="text-sm font-semibold text-gray-700 block mb-1">End Date & Time</Label>
-          <Input
-            type="datetime-local"
-            value={content?.endDate || ""}
-            onChange={e => updateContent({ endDate: e.target.value })}
-            className="w-full"
-          />
+          
+          {/* Calendar Input Wrapper */}
+          <div className="relative">
+            <Input
+              type="datetime-local"
+              value={content?.endDate || ""}
+              onChange={e => updateContent({ endDate: e.target.value })}
+              className="w-full text-gray-600 cursor-pointer pl-10" // cursor-pointer এবং আইকনের জন্য প্যাডিং
+              onClick={(e) => {
+                // ইনপুটের যেকোনো জায়গায় ক্লিক করলেই ক্যালেন্ডার ওপেন হবে
+                if ('showPicker' in HTMLInputElement.prototype) {
+                  (e.target as HTMLInputElement).showPicker();
+                }
+              }}
+            />
+            {/* ইনপুটের ভেতরে একটি সুন্দর ক্যালেন্ডার আইকন */}
+            <Calendar 
+              size={18} 
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" 
+            />
+          </div>
+          
           <p className="text-xs text-gray-400 mt-2">
             Select the date and time when this offer will expire.
           </p>

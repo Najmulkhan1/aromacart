@@ -1,9 +1,80 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { ChevronRight, CreditCard, Truck, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageSection, Theme } from "@/types/editor.types";
-import { arrayMove } from "@dnd-kit/sortable";
+import DraggableBox from "./DraggableBox";
 
+// ==========================================
+// লাইভ টাইমার কম্পোনেন্ট (প্রতি সেকেন্ডে আপডেট হবে)
+// ==========================================
+const RealTimeTimer = ({ endDate }: { endDate: string }) => {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  useEffect(() => {
+    // যদি ইউজার কোনো ডেট না দেয়, তবে ডিফল্ট ৩ দিন সেট হবে
+    const targetDate = endDate ? new Date(endDate).getTime() : new Date().getTime() + 3 * 24 * 60 * 60 * 1000;
+
+    const timer = setInterval(() => {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+
+      if (distance < 0) {
+        clearInterval(timer);
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      } else {
+        setTimeLeft({
+          days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((distance % (1000 * 60)) / 1000)
+        });
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [endDate]);
+
+  // নাম্বারগুলোকে ডাবল ডিজিট করার ফাংশন (যেমন: 5 কে 05 করা)
+  const formatTime = (time: number) => time < 10 ? `0${time}` : time;
+
+  return (
+    <div className="flex justify-center gap-4 md:gap-8">
+      {/* Days */}
+      <div className="flex flex-col items-center">
+        <div className="w-16 h-16 md:w-24 md:h-24 bg-white text-gray-900 rounded-2xl flex items-center justify-center text-2xl md:text-4xl font-bold shadow-lg">
+          {formatTime(timeLeft.days)}
+        </div>
+        <span className="mt-2 text-sm md:text-base font-medium uppercase tracking-wider">Days</span>
+      </div>
+      {/* Hours */}
+      <div className="flex flex-col items-center">
+        <div className="w-16 h-16 md:w-24 md:h-24 bg-white text-gray-900 rounded-2xl flex items-center justify-center text-2xl md:text-4xl font-bold shadow-lg">
+          {formatTime(timeLeft.hours)}
+        </div>
+        <span className="mt-2 text-sm md:text-base font-medium uppercase tracking-wider">Hours</span>
+      </div>
+      {/* Minutes */}
+      <div className="flex flex-col items-center">
+        <div className="w-16 h-16 md:w-24 md:h-24 bg-white text-gray-900 rounded-2xl flex items-center justify-center text-2xl md:text-4xl font-bold shadow-lg">
+          {formatTime(timeLeft.minutes)}
+        </div>
+        <span className="mt-2 text-sm md:text-base font-medium uppercase tracking-wider">Mins</span>
+      </div>
+      {/* Seconds */}
+      <div className="flex flex-col items-center">
+        <div className="w-16 h-16 md:w-24 md:h-24 bg-white text-gray-900 rounded-2xl flex items-center justify-center text-2xl md:text-4xl font-bold shadow-lg text-red-500">
+          {formatTime(timeLeft.seconds)}
+        </div>
+        <span className="mt-2 text-sm md:text-base font-medium uppercase tracking-wider">Secs</span>
+      </div>
+    </div>
+  );
+};
+
+
+// ==========================================
+// মেইন LivePreview কম্পোনেন্ট
+// ==========================================
 interface Props {
   sections: PageSection[];
   theme: Theme;
@@ -74,7 +145,6 @@ export default function LivePreview({ sections, theme, previewMode }: Props) {
           <div className="py-12 px-4" style={style}>
             <div className="max-w-6xl mx-auto">
               <div className="grid lg:grid-cols-2 gap-8">
-                {/* Left: Payment Methods */}
                 <div>
                   <h2 className="text-3xl font-bold mb-4">Payment Methods</h2>
                   <div className="space-y-3">
@@ -88,8 +158,6 @@ export default function LivePreview({ sections, theme, previewMode }: Props) {
                     ))}
                   </div>
                 </div>
-
-                {/* Right: Delivery Info */}
                 <div>
                   <h2 className="text-3xl font-bold mb-4">Delivery Information</h2>
                   <div className="bg-white text-gray-800 p-6 rounded-xl shadow-sm border">
@@ -97,12 +165,8 @@ export default function LivePreview({ sections, theme, previewMode }: Props) {
                       <Truck className="text-blue-600 mb-2" size={32} />
                       <h3 className="font-semibold text-lg mb-2">Standard Delivery</h3>
                       <p className="text-gray-600">Delivery within 2-4 working days.</p>
-                      <p className="font-bold mt-2">
-                        Charge: <span style={{ color: theme.primary }}>BDT {delCharge}</span>
-                      </p>
-                      <p className="text-sm font-semibold mt-2" style={{ color: theme.primary }}>
-                        Free delivery over BDT {freeOver}
-                      </p>
+                      <p className="font-bold mt-2">Charge: <span style={{ color: theme.primary }}>BDT {delCharge}</span></p>
+                      <p className="text-sm font-semibold mt-2" style={{ color: theme.primary }}>Free delivery over BDT {freeOver}</p>
                     </div>
                   </div>
                 </div>
@@ -206,6 +270,27 @@ export default function LivePreview({ sections, theme, previewMode }: Props) {
         );
       }
 
+      // 👉 এখানেই কাউন্টডাউন সেকশন কল করা হয়েছে
+      case "countdown": {
+        return (
+          <div className="py-16 px-6 relative overflow-hidden" style={{ backgroundColor: theme.secondary, color: "#fff" }}>
+            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white to-transparent"></div>
+            
+            <div className="max-w-4xl mx-auto relative z-10 text-center">
+              <h2 className="text-3xl md:text-5xl font-bold mb-4">
+                {section.content.sectionTitle || "Flash Sale Ends In!"}
+              </h2>
+              {section.content.sectionSubtitle && (
+                <p className="text-lg opacity-80 mb-10">{section.content.sectionSubtitle}</p>
+              )}
+              
+              {/* লাইভ টাইমার কম্পোনেন্ট এখানে রেন্ডার হচ্ছে */}
+              <RealTimeTimer endDate={section.content.endDate} />
+            </div>
+          </div>
+        );
+      }
+
       default: return null;
     }
   };
@@ -219,6 +304,8 @@ export default function LivePreview({ sections, theme, previewMode }: Props) {
           {renderSection(sec)}
         </React.Fragment>
       ))}
+
+      <DraggableBox initialText="Special Offer Badge!" />
     </div>
   );
 }

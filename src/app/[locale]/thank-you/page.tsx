@@ -16,7 +16,7 @@ function ThankYouContent() {
   const router = useRouter(); // রাউটার ইনিশিয়ালাইজ করা হলো
   const params = useParams();
   const currentLocale = (params?.locale as string) || "en";
-  const orderId = searchParams.get("orderId");
+  const orderId = searchParams?.get("orderId");
   
   const [copied, setCopied] = useState(false);
   const [animationStage, setAnimationStage] = useState(0); 

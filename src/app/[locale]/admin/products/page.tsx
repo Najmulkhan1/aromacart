@@ -36,7 +36,7 @@ interface Product {
 
 export default function AdminProductsPage() {
   const pathname = usePathname();
-  const currentLocale = pathname.split("/")[1] || "en";
+  const currentLocale = pathname?.split("/")[1] || "en";
 
   // স্টেট ম্যানেজমেন্ট
   const [products, setProducts] = useState<Product[]>([]);
