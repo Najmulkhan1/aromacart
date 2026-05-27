@@ -2,15 +2,19 @@
 
 import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Loader2, Lock, Mail, User, Eye, EyeOff, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 function UserAuthContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
   const mode = searchParams.get("mode") || "login"; // "login" | "register"
+
+  const currentLocale = pathname?.split("/")[1] || "en";
+  const isBn = currentLocale === "bn";
 
   const [isLogin, setIsLogin] = useState(mode !== "register");
   const [name, setName] = useState("");
@@ -56,7 +60,7 @@ function UserAuthContent() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Registration failed");
+        setError(data.error || (isBn ? "রেজিস্ট্রেশন ব্যর্থ হয়েছে" : "Registration failed"));
         setLoading(false);
         return;
       }
@@ -69,7 +73,7 @@ function UserAuthContent() {
       });
 
       if (loginRes?.error) {
-        setSuccess("অ্যাকাউন্ট তৈরি হয়েছে! এখন লগইন করুন।");
+        setSuccess(isBn ? "অ্যাকাউন্ট তৈরি হয়েছে! এখন লগইন করুন।" : "Account created! Please log in.");
         setIsLogin(true);
         setLoading(false);
       } else {
@@ -77,7 +81,7 @@ function UserAuthContent() {
         router.refresh();
       }
     } catch {
-      setError("Something went wrong");
+      setError(isBn ? "কিছু ভুল হয়েছে" : "Something went wrong");
       setLoading(false);
     }
   };
@@ -90,11 +94,14 @@ function UserAuthContent() {
 
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 text-2xl font-black tracking-tighter" style={{ fontFamily: "var(--font-playfair), serif" }}>
+          <Link href={`/${currentLocale}`} className="inline-flex items-center gap-2 text-2xl font-black tracking-tighter" style={{ fontFamily: "var(--font-playfair), serif" }}>
             Aroma<span className="text-primary">Cart</span>
           </Link>
           <p className="text-sm text-muted-foreground mt-2">
-            {isLogin ? "আপনার অ্যাকাউন্টে লগইন করুন" : "নতুন অ্যাকাউন্ট তৈরি করুন"}
+            {isLogin 
+              ? (isBn ? "আপনার অ্যাকাউন্টে লগইন করুন" : "Login to your account") 
+              : (isBn ? "নতুন অ্যাকাউন্ট তৈরি করুন" : "Create a new account")
+            }
           </p>
         </div>
 
@@ -105,13 +112,13 @@ function UserAuthContent() {
               onClick={() => { setIsLogin(true); setError(""); setSuccess(""); }}
               className={`py-4 text-sm font-bold transition-colors ${isLogin ? "text-primary border-b-2 border-primary bg-primary/5" : "text-muted-foreground hover:text-foreground"}`}
             >
-              লগইন
+              {isBn ? "লগইন" : "Login"}
             </button>
             <button
               onClick={() => { setIsLogin(false); setError(""); setSuccess(""); }}
               className={`py-4 text-sm font-bold transition-colors ${!isLogin ? "text-primary border-b-2 border-primary bg-primary/5" : "text-muted-foreground hover:text-foreground"}`}
             >
-              রেজিস্টার
+              {isBn ? "রেজিস্টার" : "Register"}
             </button>
           </div>
 
@@ -132,7 +139,9 @@ function UserAuthContent() {
             {isLogin ? (
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">ইমেইল</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                    {isBn ? "ইমেইল" : "Email"}
+                  </label>
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="your@email.com" className={inputCls} />
@@ -140,7 +149,9 @@ function UserAuthContent() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">পাসওয়ার্ড</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                    {isBn ? "পাসওয়ার্ড" : "Password"}
+                  </label>
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <input type={showPass ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••" className={`${inputCls} pr-11`} />
@@ -155,22 +166,33 @@ function UserAuthContent() {
                   disabled={loading}
                   className="w-full h-12 mt-2 rounded-2xl bg-primary text-primary-foreground font-bold text-sm shadow-lg shadow-primary/25 hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2 transition-all"
                 >
-                  {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> লগইন হচ্ছে...</> : "লগইন করুন"}
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> 
+                      {isBn ? "লগইন হচ্ছে..." : "Logging in..."}
+                    </>
+                  ) : (
+                    isBn ? "লগইন করুন" : "Log In"
+                  )}
                 </button>
               </form>
             ) : (
               /* ── Register Form ── */
               <form onSubmit={handleRegister} className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">আপনার নাম</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                    {isBn ? "আপনার নাম" : "Your Name"}
+                  </label>
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <input type="text" value={name} onChange={e => setName(e.target.value)} required placeholder="আপনার পুরো নাম" className={inputCls} />
+                    <input type="text" value={name} onChange={e => setName(e.target.value)} required placeholder={isBn ? "আপনার পুরো নাম" : "Your Full Name"} className={inputCls} />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">ইমেইল</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                    {isBn ? "ইমেইল" : "Email"}
+                  </label>
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="your@email.com" className={inputCls} />
@@ -178,10 +200,12 @@ function UserAuthContent() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">পাসওয়ার্ড</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                    {isBn ? "পাসওয়ার্ড" : "Password"}
+                  </label>
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <input type={showPass ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} required placeholder="কমপক্ষে ৬ অক্ষর" className={`${inputCls} pr-11`} />
+                    <input type={showPass ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} required placeholder={isBn ? "কমপক্ষে ৬ অক্ষর" : "Min 6 characters"} className={`${inputCls} pr-11`} />
                     <button type="button" onClick={() => setShowPass(p => !p)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                       {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -193,7 +217,17 @@ function UserAuthContent() {
                   disabled={loading}
                   className="w-full h-12 mt-2 rounded-2xl bg-primary text-primary-foreground font-bold text-sm shadow-lg shadow-primary/25 hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2 transition-all"
                 >
-                  {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> তৈরি হচ্ছে...</> : <><Sparkles className="w-4 h-4" /> অ্যাকাউন্ট তৈরি করুন</>}
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> 
+                      {isBn ? "তৈরি হচ্ছে..." : "Creating account..."}
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" /> 
+                      {isBn ? "অ্যাকাউন্ট তৈরি করুন" : "Create Account"}
+                    </>
+                  )}
                 </button>
               </form>
             )}
@@ -201,7 +235,9 @@ function UserAuthContent() {
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-6">
-          <Link href="/" className="hover:text-primary transition-colors">← দোকানে ফিরে যান</Link>
+          <Link href={`/${currentLocale}`} className="hover:text-primary transition-colors">
+            {isBn ? "← দোকানে ফিরে যান" : "← Back to Shop"}
+          </Link>
         </p>
       </div>
     </div>
