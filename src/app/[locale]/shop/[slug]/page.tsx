@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
-import { Star, Shield, Truck, RotateCcw } from "lucide-react";
+import { Shield, Truck, RotateCcw } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductInteractiveSection } from "@/components/shop/ProductInteractiveSection";
 import { ProductGallery } from "@/components/shop/ProductGallery";
+import ProductReviews from "@/components/shop/ProductReviews";
 import connectDB from "@/lib/db";
 import Product from "@/models/Product";
 
@@ -70,22 +71,16 @@ export default async function ProductDetailsPage({
                 {title}
               </h1>
 
-              {/* Stars + Review count */}
+              {/* Stars placeholder */}
               <div className="flex items-center gap-3 mb-6">
                 <div className="flex items-center gap-0.5">
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className="w-4 h-4 fill-amber-400 text-amber-400"
-                    />
+                    <svg key={star} className="w-4 h-4 fill-amber-400 text-amber-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                   ))}
                 </div>
-                <span className="text-sm font-medium text-foreground">4.9</span>
+                <span className="text-sm font-medium text-foreground">—</span>
                 <span className="text-sm text-muted-foreground">
-                  (124 {locale === "bn" ? "রিভিউ" : "reviews"})
-                </span>
-                <span className="text-sm text-primary font-medium cursor-pointer hover:underline">
-                  {locale === "bn" ? "সব দেখুন" : "See all"}
+                  {locale === "bn" ? "রিভিউ" : "reviews"}
                 </span>
               </div>
 
@@ -332,106 +327,8 @@ export default async function ProductDetailsPage({
         </Tabs>
       </section>
 
-      {/* ── Reviews Snapshot ── */}
-      <section className="border-t border-border/50 bg-secondary/10">
-        <div className="container mx-auto px-4 py-16">
-          <div className="flex flex-col md:flex-row gap-12 items-start">
-            {/* Rating summary */}
-            <div className="shrink-0 text-center md:text-left">
-              <p
-                className="text-7xl font-bold text-foreground leading-none mb-2"
-                style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
-              >
-                4.9
-              </p>
-              <div className="flex items-center justify-center md:justify-start gap-0.5 mb-2">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Star key={s} className="w-5 h-5 fill-amber-400 text-amber-400" />
-                ))}
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {locale === "bn" ? "১২৪টি রিভিউ" : "Based on 124 reviews"}
-              </p>
-            </div>
-
-            {/* Rating bars */}
-            <div className="flex-1 space-y-3 w-full">
-              {[
-                { stars: 5, pct: 82 },
-                { stars: 4, pct: 12 },
-                { stars: 3, pct: 4 },
-                { stars: 2, pct: 1 },
-                { stars: 1, pct: 1 },
-              ].map(({ stars, pct }) => (
-                <div key={stars} className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground w-4 text-right shrink-0">
-                    {stars}
-                  </span>
-                  <Star className="w-3 h-3 fill-amber-400 text-amber-400 shrink-0" />
-                  <div className="flex-1 h-2 rounded-full bg-border/60 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-amber-400"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <span className="text-xs text-muted-foreground w-8 shrink-0">
-                    {pct}%
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* Sample review cards */}
-            <div className="flex-1 space-y-4 w-full">
-              {[
-                {
-                  name: "Rafiq A.",
-                  rating: 5,
-                  text:
-                    locale === "bn"
-                      ? "অসাধারণ সুগন্ধি! সারাদিন টিকে থাকে। প্যাকেজিংও খুব সুন্দর।"
-                      : "Absolutely stunning fragrance. Lasts all day and the packaging is gorgeous.",
-                },
-                {
-                  name: "Nadia K.",
-                  rating: 5,
-                  text:
-                    locale === "bn"
-                      ? "এটা আমার এখন পর্যন্ত কেনা সেরা পারফিউম। সবাই জিজ্ঞেস করে কোনটা!"
-                      : "Best perfume I've ever bought. Everyone keeps asking what I'm wearing!",
-                },
-              ].map((review) => (
-                <div
-                  key={review.name}
-                  className="p-5 rounded-2xl bg-card border border-border/50 shadow-sm"
-                >
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center text-xs font-bold text-primary">
-                      {review.name[0]}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">
-                        {review.name}
-                      </p>
-                      <div className="flex gap-0.5">
-                        {Array.from({ length: review.rating }).map((_, i) => (
-                          <Star
-                            key={i}
-                            className="w-3 h-3 fill-amber-400 text-amber-400"
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {review.text}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* ── Real Reviews Section ── */}
+      <ProductReviews productId={product._id.toString()} locale={locale} />
     </div>
   );
 }

@@ -14,26 +14,28 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("ইমেইল এবং পাসওয়ার্ড দিন");
+          throw new Error("ইমেইল এবং পাসওয়ার্ড দিন");
         }
 
         await connectDB();
-        
-        const user = await User.findOne({ email: credentials.email });
+
+        const user = await User.findOne({ email: credentials.email.toLowerCase() });
         if (!user) {
-          throw new Error("এই ইমেইল দিয়ে কোনো অ্যাকাউন্ট নেই");
+          throw new Error("এই ইমেইল দিয়ে কোনো অ্যাকাউন্ট নেই");
         }
 
         const isPasswordMatch = await bcrypt.compare(credentials.password, user.password);
         if (!isPasswordMatch) {
-          throw new Error("পাসওয়ার্ড ভুল হয়েছে");
+          throw new Error("পাসওয়ার্ড ভুল হয়েছে");
         }
 
-        if (user.role !== "admin") {
-          throw new Error("আপনার অ্যাডমিন প্যানেলে প্রবেশ করার অনুমতি নেই");
-        }
-
-        return { id: user._id.toString(), name: user.name, email: user.email, role: user.role };
+        // ✅ user এবং admin উভয়ই login করতে পারবে
+        return {
+          id: user._id.toString(),
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        };
       },
     }),
   ],
@@ -56,7 +58,7 @@ export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
-    signIn: "/en/login", // লগইন পেজের কাস্টম URL
+    signIn: "/en/login",
   },
 };
 
