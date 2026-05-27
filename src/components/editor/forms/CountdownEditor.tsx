@@ -1,7 +1,7 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LayoutIcon, Clock, Calendar } from "lucide-react"; // Calendar আইকন যুক্ত করা হলো
+import { LayoutIcon, Clock, Calendar } from "lucide-react"; // Calendar icon added
 
 interface Props {
   content: any;
@@ -54,15 +54,15 @@ export default function CountdownEditor({ content, updateContent }: Props) {
               type="datetime-local"
               value={content?.endDate || ""}
               onChange={e => updateContent({ endDate: e.target.value })}
-              className="w-full text-gray-600 cursor-pointer pl-10" // cursor-pointer এবং আইকনের জন্য প্যাডিং
+              className="w-full text-gray-600 cursor-pointer pl-10" // cursor-pointer and left padding for the icon
               onClick={(e) => {
-                // ইনপুটের যেকোনো জায়গায় ক্লিক করলেই ক্যালেন্ডার ওপেন হবে
+                // Opens the calendar picker when clicking anywhere in the input
                 if ('showPicker' in HTMLInputElement.prototype) {
                   (e.target as HTMLInputElement).showPicker();
                 }
               }}
             />
-            {/* ইনপুটের ভেতরে একটি সুন্দর ক্যালেন্ডার আইকন */}
+            {/* Calendar icon displayed inside the input field */}
             <Calendar 
               size={18} 
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" 

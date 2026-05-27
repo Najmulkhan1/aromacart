@@ -23,7 +23,7 @@ export default function AddProductPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // ফর্মের সব রিয়েল স্টেট হ্যান্ডেল করা হচ্ছে
+  // Manage all real form state
   const [formData, setFormData] = useState({
     nameEn: "",
     nameBn: "",
@@ -47,7 +47,7 @@ export default function AddProductPage() {
     price100: "",
   });
 
-  // ইনপুট চেঞ্জ হ্যান্ডলার
+  // Input change handler
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value, type } = e.target;
     if (type === "checkbox") {
@@ -58,35 +58,35 @@ export default function AddProductPage() {
     }
   };
 
-  // সিলেক্ট ড্রপডাউন হ্যান্ডলার
+  // Select dropdown handler
   const handleSelectChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // রিয়েল ফর্ম সাবমিট ফাংশন
+  // Real form submit function
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    // ভ্যালিডেশন চেক
+    // Validation check
     if (!formData.nameEn || !formData.nameBn || !formData.regularPrice || !formData.totalStock || !formData.scentFamily) {
       setError("Please fill in all required fields (*)");
       setLoading(false);
       return;
     }
 
-    // সাইজ ভ্যারিয়েন্ট অ্যারে তৈরি করা
+    // Build size variants array
     const sizes = [];
     if (formData.size30 && formData.price30) sizes.push({ size: "30ml", price: Number(formData.price30) });
     if (formData.size50 && formData.price50) sizes.push({ size: "50ml", price: Number(formData.price50) });
     if (formData.size100 && formData.price100) sizes.push({ size: "100ml", price: Number(formData.price100) });
 
-    // ব্যাকএন্ডে পাঠানোর জন্য অবজেক্ট স্ট্রাকচার তৈরি করা
+    // Build object structure to send to backend
     const payload = {
       nameEn: formData.nameEn,
       nameBn: formData.nameBn,
-      slug: formData.slug || undefined, // খালি থাকলে ব্যাকএন্ড নিজে জেনারেট করবে
+      slug: formData.slug || undefined, // If empty, the backend will auto-generate it
       descriptionEn: formData.descriptionEn,
       descriptionBn: formData.descriptionBn,
       images: formData.images,
@@ -101,7 +101,7 @@ export default function AddProductPage() {
         base: formData.baseNotes,
       },
       sizes: sizes,
-      status: "Active", // সরাসরি একটিভ হিসেবে পাবলিশ করছি
+      status: "Active", // Publishing directly as active
     };
 
     try {
@@ -117,7 +117,7 @@ export default function AddProductPage() {
         throw new Error(result.error || "Something went wrong");
       }
 
-      // সফলভাবে সেভ হলে প্রোডাক্ট লিস্ট পেজে রিডাইরেক্ট করবে
+      // On successful save, redirect to product list page
       router.push("/en/admin/products");
       router.refresh();
     } catch (err) {
@@ -185,7 +185,7 @@ export default function AddProductPage() {
             </CardContent>
           </Card>
 
-          {/* Product Images Card (নতুন যুক্ত করা হলো) */}
+          {/* Product Images Card (newly added) */}
           <Card className="rounded-2xl border-border shadow-sm">
             <CardHeader>
               <CardTitle>Product Images</CardTitle>

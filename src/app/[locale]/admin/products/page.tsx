@@ -38,16 +38,16 @@ export default function AdminProductsPage() {
   const pathname = usePathname();
   const currentLocale = pathname?.split("/")[1] || "en";
 
-  // স্টেট ম্যানেজমেন্ট
+  // State management
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // ডাটাবেস থেকে প্রোডাক্ট নিয়ে আসার ফাংশন
+  // Function to fetch products from the database
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // আমরা আমাদের তৈরি করা API কল করছি (সব প্রোডাক্টের জন্য status=all প্যারামিটার পাঠিয়ে)
+        // Calling our API with status=all parameter to fetch all products
         const response = await fetch("/api/products?status=all");
         const result = await response.json();
 

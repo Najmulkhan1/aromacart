@@ -19,7 +19,7 @@ export default function DraggableBox({
 
   return (
     <>
-      {/* @ts-ignore - এটি TypeScript-এর অহেতুক লাল দাগগুলো দূর করবে */}
+      {/* @ts-ignore - Suppresses unnecessary TypeScript red underlines */}
       <Rnd
         size={{ width: size.width, height: size.height }}
         position={{ x: position.x, y: position.y }}

@@ -56,6 +56,7 @@ export default function Navbar() {
     { href: `/${currentLocale}/categories`, label: t("collections") },
     { href: `/${currentLocale}/about`, label: t("story") },
     { href: `/${currentLocale}/contact`, label: t("contact") },
+    { href: `/${currentLocale}/track-order`, label: t("trackOrder") },
   ];
 
   return (

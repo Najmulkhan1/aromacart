@@ -61,7 +61,7 @@ export const useCartStore = create<CartStore>()(
     }),
     { 
       name: "cart-storage",
-      version: 1, // Version বাড়ালে পুরনো localStorage data clear হবে
+      version: 1, // Incrementing the version clears old localStorage data
     }
   )
 );

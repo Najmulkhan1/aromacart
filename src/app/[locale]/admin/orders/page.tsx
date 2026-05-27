@@ -21,7 +21,7 @@ export default function AdminOrdersPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // API থেকে রিয়েল ডাটা ফেচ করা
+  // Fetch real data from the API
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -39,7 +39,7 @@ export default function AdminOrdersPage() {
     fetchOrders();
   }, []);
 
-  // স্ট্যাটাস আপডেট করা
+  // Update order status
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     setUpdatingId(orderId);
     try {
@@ -62,7 +62,7 @@ export default function AdminOrdersPage() {
     }
   };
 
-  // স্ট্যাটাস অনুযায়ী ব্যাজ কালার
+  // Get badge color based on status
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Pending": return "bg-amber-500/15 text-amber-600 border-amber-500/20";
@@ -74,7 +74,7 @@ export default function AdminOrdersPage() {
     }
   };
 
-  // --- Analytics Calculations (ডায়নামিক ডাটা) ---
+  // --- Analytics Calculations (Dynamic Data) ---
   const totalRevenue = orders.reduce((sum, order) => order.status !== "Cancelled" ? sum + order.totalAmount : sum, 0);
   const totalOrders = orders.length;
   const pendingOrders = orders.filter(o => o.status === "Pending").length;
