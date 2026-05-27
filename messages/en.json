@@ -5,6 +5,10 @@
     "story": "Our Story",
     "contact": "Contact",
     "search": "Search fragrances, brands, notes...",
-    "trackOrder": "Track Order"
+    "trackOrder": "Track Order",
+    "login": "Login",
+    "logout": "Logout",
+    "myOrders": "My Orders",
+    "adminDashboard": "Admin Dashboard"
   }
 }
