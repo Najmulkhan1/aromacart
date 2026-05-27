@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Package, Search, Calendar, MapPin, Phone, AlertCircle, CheckCircle2, ChevronDown, ChevronUp, TrendingUp } from "lucide-react";
+import { Loader2, Package, Search, Calendar, MapPin, Phone, AlertCircle, CheckCircle2, ChevronDown, ChevronUp, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
 
 // Types
 type OrderItem = { name: string; quantity: number; price: number; size: string };
@@ -35,6 +35,8 @@ export default function AdminOrdersPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ORDERS_PER_PAGE = 10;
 
   const toggleExpand = (orderId: string) => {
     setExpandedOrder(prev => prev === orderId ? null : orderId);
@@ -132,6 +134,20 @@ export default function AdminOrdersPage() {
     order._id.slice(-6).toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Pagination
+  const totalPages = Math.ceil(filteredOrders.length / ORDERS_PER_PAGE);
+  const paginatedOrders = filteredOrders.slice(
+    (currentPage - 1) * ORDERS_PER_PAGE,
+    currentPage * ORDERS_PER_PAGE
+  );
+
+  // Search করলে page 1 এ reset
+  const handleSearch = (q: string) => {
+    setSearchQuery(q);
+    setCurrentPage(1);
+    setExpandedOrder(null);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -201,7 +217,7 @@ export default function AdminOrdersPage() {
                 type="text" 
                 placeholder="Search by ID, Name or Phone..." 
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => handleSearch(e.target.value)}
                 className="w-full h-10 pl-9 pr-4 rounded-xl border border-border bg-secondary/30 text-sm focus:outline-none focus:border-primary transition-colors"
               />
             </div>
@@ -227,7 +243,7 @@ export default function AdminOrdersPage() {
                     </td>
                   </tr>
                 ) : (
-                  filteredOrders.map((order) => (
+                  paginatedOrders.map((order) => (
                     <>
                       <tr 
                         key={order._id} 
@@ -489,6 +505,72 @@ export default function AdminOrdersPage() {
               </tbody>
             </table>
           </div>
+
+          {/* ── Pagination ── */}
+          {totalPages > 1 && (
+            <div className="px-6 py-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
+              {/* Info text */}
+              <p className="text-xs text-muted-foreground">
+                Showing{" "}
+                <span className="font-bold text-foreground">
+                  {(currentPage - 1) * ORDERS_PER_PAGE + 1}–{Math.min(currentPage * ORDERS_PER_PAGE, filteredOrders.length)}
+                </span>{" "}
+                of <span className="font-bold text-foreground">{filteredOrders.length}</span> orders
+              </p>
+
+              {/* Page buttons */}
+              <div className="flex items-center gap-1.5">
+                {/* Prev */}
+                <button
+                  onClick={() => { setCurrentPage(p => p - 1); setExpandedOrder(null); }}
+                  disabled={currentPage === 1}
+                  className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+
+                {/* Page numbers */}
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(page =>
+                    page === 1 ||
+                    page === totalPages ||
+                    Math.abs(page - currentPage) <= 1
+                  )
+                  .reduce<(number | "...")[]>((acc, page, idx, arr) => {
+                    if (idx > 0 && (page as number) - (arr[idx - 1] as number) > 1) acc.push("...");
+                    acc.push(page);
+                    return acc;
+                  }, [])
+                  .map((item, idx) =>
+                    item === "..." ? (
+                      <span key={`ellipsis-${idx}`} className="w-8 h-8 flex items-center justify-center text-xs text-muted-foreground">…</span>
+                    ) : (
+                      <button
+                        key={item}
+                        onClick={() => { setCurrentPage(item as number); setExpandedOrder(null); }}
+                        className={`w-8 h-8 rounded-lg text-xs font-bold border transition-all ${
+                          currentPage === item
+                            ? "bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20"
+                            : "border-border text-muted-foreground hover:border-primary hover:text-primary"
+                        }`}
+                      >
+                        {item}
+                      </button>
+                    )
+                  )
+                }
+
+                {/* Next */}
+                <button
+                  onClick={() => { setCurrentPage(p => p + 1); setExpandedOrder(null); }}
+                  disabled={currentPage === totalPages}
+                  className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
       </div>
