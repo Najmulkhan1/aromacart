@@ -5,11 +5,11 @@ import {
   ShoppingCart, 
   Users, 
   LayoutTemplate, 
-  LogOut,
   Bell
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Button } from "@/components/ui/button";
+import LogoutButton from "@/components/admin/LogoutButton";
 
 const sidebarLinks = [
   { href: "/en/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -50,9 +50,7 @@ export default function AdminLayout({
         </nav>
 
         <div className="p-4 border-t border-border">
-          <Button variant="ghost" className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl">
-            <LogOut className="w-5 h-5 mr-3" /> Logout
-          </Button>
+          <LogoutButton />
         </div>
       </aside>
 
