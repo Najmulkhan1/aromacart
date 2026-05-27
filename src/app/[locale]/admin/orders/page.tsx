@@ -81,6 +81,32 @@ export default function AdminOrdersPage() {
     }
   };
 
+  // Payment status update (Paid / Unpaid)
+  const [updatingPaymentId, setUpdatingPaymentId] = useState<string | null>(null);
+
+  const handlePaymentStatusChange = async (orderId: string, newPaymentStatus: string) => {
+    setUpdatingPaymentId(orderId);
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paymentStatus: newPaymentStatus }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOrders((prev) =>
+          prev.map((order) =>
+            order._id === orderId ? { ...order, paymentStatus: newPaymentStatus } : order
+          )
+        );
+      }
+    } catch (error) {
+      alert("Failed to update payment status");
+    } finally {
+      setUpdatingPaymentId(null);
+    }
+  };
+
   // Get badge color based on status
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -360,17 +386,17 @@ export default function AdminOrdersPage() {
                                     )}
                                   </div>
 
-                                  {/* bKash / Nagad Transaction Details */}
+                                  {/* bKash / Nagad Transaction Details + Payment Status Toggle */}
                                   {(order.paymentMethod === "bkash" || order.paymentMethod === "nagad") && (
-                                    <div className={`mt-2 p-3 rounded-xl border space-y-2 ${
-                                      order.paymentMethod === "bkash" 
-                                        ? "bg-pink-500/5 border-pink-200/40 dark:border-pink-800/30" 
+                                    <div className={`mt-2 p-3 rounded-xl border space-y-3 ${
+                                      order.paymentMethod === "bkash"
+                                        ? "bg-pink-500/5 border-pink-200/40 dark:border-pink-800/30"
                                         : "bg-orange-500/5 border-orange-200/40 dark:border-orange-800/30"
                                     }`}>
                                       <div>
                                         <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Sender Number</p>
                                         <p className="text-sm font-mono font-bold mt-0.5">
-                                          {order.transactionDetails?.senderNumber || 
+                                          {order.transactionDetails?.senderNumber ||
                                             <span className="text-muted-foreground font-normal text-xs italic">Not provided</span>
                                           }
                                         </p>
@@ -378,10 +404,49 @@ export default function AdminOrdersPage() {
                                       <div>
                                         <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Transaction ID</p>
                                         <p className="text-sm font-mono font-bold mt-0.5">
-                                          {order.transactionDetails?.transactionId || 
+                                          {order.transactionDetails?.transactionId ||
                                             <span className="text-muted-foreground font-normal text-xs italic">Not provided</span>
                                           }
                                         </p>
+                                      </div>
+
+                                      {/* ── Payment Status Toggle ── */}
+                                      <div className="pt-2 border-t border-border/30">
+                                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Payment Status</p>
+                                        <div className="flex gap-2">
+                                          <button
+                                            disabled={updatingPaymentId === order._id}
+                                            onClick={() => handlePaymentStatusChange(order._id, "Paid")}
+                                            className={`flex-1 h-9 rounded-xl text-xs font-bold border-2 transition-all flex items-center justify-center gap-1.5 ${
+                                              order.paymentStatus === "Paid"
+                                                ? "bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/20"
+                                                : "bg-card border-border text-muted-foreground hover:border-emerald-400 hover:text-emerald-600"
+                                            }`}
+                                          >
+                                            {updatingPaymentId === order._id && order.paymentStatus !== "Paid" ? (
+                                              <Loader2 className="w-3 h-3 animate-spin" />
+                                            ) : (
+                                              <CheckCircle2 className="w-3 h-3" />
+                                            )}
+                                            Paid
+                                          </button>
+                                          <button
+                                            disabled={updatingPaymentId === order._id}
+                                            onClick={() => handlePaymentStatusChange(order._id, "Unpaid")}
+                                            className={`flex-1 h-9 rounded-xl text-xs font-bold border-2 transition-all flex items-center justify-center gap-1.5 ${
+                                              order.paymentStatus === "Unpaid"
+                                                ? "bg-amber-500 text-white border-amber-500 shadow-md shadow-amber-500/20"
+                                                : "bg-card border-border text-muted-foreground hover:border-amber-400 hover:text-amber-600"
+                                            }`}
+                                          >
+                                            {updatingPaymentId === order._id && order.paymentStatus !== "Unpaid" ? (
+                                              <Loader2 className="w-3 h-3 animate-spin" />
+                                            ) : (
+                                              <AlertCircle className="w-3 h-3" />
+                                            )}
+                                            Unpaid
+                                          </button>
+                                        </div>
                                       </div>
                                     </div>
                                   )}

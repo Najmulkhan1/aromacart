@@ -8,13 +8,18 @@ export async function PATCH(
 ) {
   try {
     await connectDB();
-    const { id } = await params; // Next.js 15 অনুযায়ী params await করতে হয়
+    const { id } = await params; // Next.js 15 অনুযায়ী params await করতে হয়
     const body = await request.json();
-    const { status } = body;
+    const { status, paymentStatus } = body;
+
+    // যা যা পাঠানো হয়েছে শুধু সেটাই update করবে
+    const updateFields: Record<string, string> = {};
+    if (status) updateFields.status = status;
+    if (paymentStatus) updateFields.paymentStatus = paymentStatus;
 
     const updatedOrder = await Order.findByIdAndUpdate(
       id,
-      { status },
+      { $set: updateFields },
       { new: true }
     );
 
