@@ -25,33 +25,35 @@ export function ProductCard({ title, price, category, href = "#", image, compare
       <div className="absolute -inset-px rounded-3xl bg-gradient-to-b from-primary/0 via-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:via-transparent group-hover:to-primary/3 transition-all duration-500 -z-10 blur-xl opacity-0 group-hover:opacity-100" />
 
       {/* Image Container */}
-      <Link href={href} className="relative aspect-[3/4] bg-gradient-to-br from-secondary/40 to-secondary/20 overflow-hidden">
-        {image ? (
-          <>
-            {/* Skeleton pulse while loading */}
-            {!imageLoaded && (
-              <div className="absolute inset-0 bg-secondary/50 animate-pulse" />
-            )}
-            <img 
-              src={image} 
-              alt={title}
-              onLoad={() => setImageLoaded(true)}
-              className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-110 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-            />
-          </>
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground/30">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-              <Sparkles className="w-8 h-8 text-primary/30" />
+      <div className="relative aspect-[3/4] bg-gradient-to-br from-secondary/40 to-secondary/20 overflow-hidden">
+        <Link href={href} className="absolute inset-0 z-0">
+          {image ? (
+            <>
+              {/* Skeleton pulse while loading */}
+              {!imageLoaded && (
+                <div className="absolute inset-0 bg-secondary/50 animate-pulse" />
+              )}
+              <img 
+                src={image} 
+                alt={title}
+                onLoad={() => setImageLoaded(true)}
+                className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-110 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+              />
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground/30">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+                <Sparkles className="w-8 h-8 text-primary/30" />
+              </div>
+              <span className="text-[10px] font-bold tracking-[0.25em] uppercase">
+                Coming Soon
+              </span>
             </div>
-            <span className="text-[10px] font-bold tracking-[0.25em] uppercase">
-              Coming Soon
-            </span>
-          </div>
-        )}
+          )}
 
-        {/* Gradient overlay on hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-all duration-500" />
+          {/* Gradient overlay on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-all duration-500" />
+        </Link>
 
         {/* Featured Badge */}
         {isFeatured && (
@@ -103,7 +105,7 @@ export function ProductCard({ title, price, category, href = "#", image, compare
             <Eye className="w-4 h-4" />
           </Link>
         </div>
-      </Link>
+      </div>
 
       {/* Content Details */}
       <div className="p-5 flex flex-col flex-1">

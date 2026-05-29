@@ -15,9 +15,12 @@ export default async function ProductDetailsPage({
   const { locale, slug } = await params;
 
   await connectDB();
-  const product = await Product.findOne({ slug, status: { $ne: "Draft" } });
+  const rawProduct = await Product.findOne({ slug, status: { $ne: "Draft" } });
 
-  if (!product) notFound();
+  if (!rawProduct) notFound();
+
+  // Convert Mongoose Document to clean plain JSON object
+  const product = JSON.parse(JSON.stringify(rawProduct));
 
   const title = locale === "bn" ? product.nameBn : product.nameEn;
   const description =
@@ -25,12 +28,17 @@ export default async function ProductDetailsPage({
 
   const sizes =
     product.sizes && product.sizes.length > 0
-      ? product.sizes.map((s) => ({ size: s.size, price: s.price }))
+      ? product.sizes.map((s: any) => ({
+          size: String(s.size || s.label || `${s.ml}ml` || "50ml"),
+          price: Number(s.price || product.regularPrice),
+        }))
       : [
           { size: "30ml", price: product.regularPrice },
           { size: "50ml", price: product.regularPrice + 2500 },
           { size: "100ml", price: product.regularPrice + 5000 },
         ];
+
+  const galleryImages = product.images ? product.images.map((img: any) => String(img)) : [];
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
@@ -55,7 +63,7 @@ export default async function ProductDetailsPage({
             {/* ── Left: Image Gallery (Span 6) ── */}
             <div className="lg:col-span-6 w-full">
               <div className="relative group">
-                <ProductGallery images={product.images || []} isFeatured={product.isFeatured} />
+                <ProductGallery images={galleryImages} isFeatured={product.isFeatured} />
               </div>
             </div>
 
@@ -121,7 +129,11 @@ export default async function ProductDetailsPage({
                   basePrice={product.regularPrice}
                   compareAtPrice={product.compareAtPrice}
                   locale={locale}
-                  scentNotes={product.scentNotes || {}}
+                  scentNotes={{
+                    top: product.scentNotes?.top || "",
+                    heart: product.scentNotes?.heart || "",
+                    base: product.scentNotes?.base || ""
+                  }}
                   productInfo={{
                     id: product._id.toString(),
                     name: title,
