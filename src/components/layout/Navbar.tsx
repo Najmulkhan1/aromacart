@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl"; // ট্রান্সলেশ�
 import { Search, ShoppingBag, Heart, User, Menu, X, LogOut, Settings, ListOrdered, ShieldAlert } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useCartStore } from "@/store/cartStore";
+import { useWishlistStore } from "@/store/wishlistStore";
 import { useSession, signOut } from "next-auth/react";
 
 export default function Navbar() {
@@ -14,10 +15,16 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [wishlistOpen, setWishlistOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const wishlistRef = useRef<HTMLDivElement>(null);
   
   const { openCart, items } = useCartStore();
   const cartItemsCount = items.reduce((total, item) => total + item.quantity, 0);
+
+  const wishlistItems = useWishlistStore((state) => state.items);
+  const wishlistItemsCount = wishlistItems.length;
+  const { removeFromWishlist } = useWishlistStore();
 
   const pathname = usePathname();
   const router = useRouter();
@@ -40,6 +47,9 @@ export default function Navbar() {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setDropdownOpen(false);
+      }
+      if (wishlistRef.current && !wishlistRef.current.contains(event.target as Node)) {
+        setWishlistOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -150,11 +160,89 @@ export default function Navbar() {
 
               <ThemeToggle />
 
-              {/* Wishlist */}
-              <button className="relative h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
-                <Heart className="h-4 w-4" />
-                <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-primary rounded-full" />
-              </button>
+              {/* Wishlist Dropdown Modal */}
+              <div className="relative" ref={wishlistRef}>
+                <button 
+                  onClick={() => setWishlistOpen(!wishlistOpen)}
+                  className="relative h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+                >
+                  <Heart className={`h-4 w-4 ${wishlistItemsCount > 0 ? "text-rose-500 fill-rose-500" : ""}`} />
+                  {wishlistItemsCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary text-primary-foreground rounded-full text-[9px] font-bold flex items-center justify-center">
+                      {wishlistItemsCount}
+                    </span>
+                  )}
+                </button>
+
+                {wishlistOpen && (
+                  <div className="absolute right-[-40px] sm:right-0 mt-2 w-72 sm:w-80 rounded-2xl border border-border bg-background/95 backdrop-blur-md p-4 shadow-xl z-50 animate-in fade-in slide-in-from-top-3 duration-200">
+                    <div className="flex items-center justify-between pb-3 border-b border-border/50">
+                      <span className="text-xs font-bold uppercase tracking-wider text-foreground">
+                        {currentLocale === "bn" ? `পছন্দের তালিকা (${wishlistItemsCount})` : `Wishlist (${wishlistItemsCount})`}
+                      </span>
+                      {wishlistItemsCount > 0 && (
+                        <button 
+                          onClick={() => {
+                            setWishlistOpen(false);
+                            router.push(`/${currentLocale}/wishlist`);
+                          }}
+                          className="text-[10px] font-bold text-primary hover:underline uppercase"
+                        >
+                          {currentLocale === "bn" ? "সব দেখুন" : "View All"}
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="py-2 max-h-60 overflow-y-auto space-y-3">
+                      {wishlistItemsCount === 0 ? (
+                        <div className="py-8 text-center">
+                          <Heart className="w-8 h-8 mx-auto text-muted-foreground/35 mb-2" />
+                          <p className="text-xs text-muted-foreground">
+                            {currentLocale === "bn" ? "পছন্দের তালিকা খালি আছে" : "Your wishlist is empty"}
+                          </p>
+                        </div>
+                      ) : (
+                        wishlistItems.map((item) => (
+                          <div key={item.id} className="flex items-center gap-3 group text-left">
+                            <div className="relative w-12 h-15 rounded-lg overflow-hidden border border-border bg-secondary/20 shrink-0">
+                              <img src={item.image} alt={item.name} className="object-cover w-full h-full" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                                {item.name}
+                              </h4>
+                              <p className="text-[10px] font-semibold text-muted-foreground mt-0.5">
+                                ৳ {item.price.toLocaleString()}
+                              </p>
+                            </div>
+                            <button 
+                              onClick={() => removeFromWishlist(item.id)}
+                              className="p-1 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all shrink-0"
+                              aria-label="Remove item"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    {wishlistItemsCount > 0 && (
+                      <div className="pt-3 border-t border-border/50">
+                        <button
+                          onClick={() => {
+                            setWishlistOpen(false);
+                            router.push(`/${currentLocale}/wishlist`);
+                          }}
+                          className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:bg-primary/95 shadow-sm transition-all text-center"
+                        >
+                          {currentLocale === "bn" ? "উইশলিস্ট পেজে যান" : "Go to Wishlist Page"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
 
               {/* Cart */}
               <button

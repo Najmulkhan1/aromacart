@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Heart, ShoppingBag, Minus, Plus, Check, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useCartStore } from "@/store/cartStore";
+import { useWishlistStore } from "@/store/wishlistStore";
 import { useRouter } from "next/navigation";
 
 interface SizeVariant {
@@ -32,10 +33,16 @@ export function ProductInteractiveSection({
     sizes[0] || null
   );
   const [quantity, setQuantity] = useState(1);
-  const [wishlist, setWishlist] = useState(false);
   const [added, setAdded] = useState(false);
   const { addItem, closeCart } = useCartStore();
+  const { toggleWishlist, isInWishlist } = useWishlistStore();
+  const [isWish, setIsWish] = useState(false);
   const router = useRouter();
+
+  // Sync wishlist status locally
+  useEffect(() => {
+    setIsWish(isInWishlist(productInfo.id));
+  }, [productInfo.id, isInWishlist]);
 
   const handleBuyNow = () => {
     addItem({
@@ -71,6 +78,16 @@ export function ProductInteractiveSection({
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
+  };
+
+  const handleWishlistToggle = () => {
+    toggleWishlist({
+      id: productInfo.id,
+      name: productInfo.name,
+      price: currentPrice,
+      image: productInfo.image,
+    });
+    setIsWish(!isWish);
   };
 
   return (
@@ -193,15 +210,15 @@ export function ProductInteractiveSection({
 
           {/* Wishlist */}
           <button
-            onClick={() => setWishlist((w) => !w)}
+            onClick={handleWishlistToggle}
             className={`w-14 h-14 rounded-2xl border-2 flex items-center justify-center transition-all duration-200 shrink-0 ${
-              wishlist
+              isWish
                 ? "border-rose-400 bg-rose-50 dark:bg-rose-950/30 text-rose-500"
                 : "border-border/60 text-muted-foreground hover:border-rose-300 hover:text-rose-400"
             }`}
             aria-label="Add to wishlist"
           >
-            <Heart className={`w-5 h-5 ${wishlist ? "fill-current" : ""}`} />
+            <Heart className={`w-5 h-5 ${isWish ? "fill-current" : ""}`} />
           </button>
         </div>
 

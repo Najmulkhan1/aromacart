@@ -60,9 +60,31 @@ export async function POST(request: NextRequest) {
       ? body.slug.toLowerCase().replace(/[^a-z0-9]+/g, "-")
       : body.nameEn.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
+    // ডাটাবেসে ইনসার্ট করার আগে সাইজ এবং ব্র্যান্ড ডাটা ভ্যালিডেশন
+    const sizes = Array.isArray(body.sizes)
+      ? body.sizes.map((s: any) => ({
+          size: String(s.size || s.label || (s.ml ? `${s.ml}ml` : "50ml")),
+          price: Number(s.price || body.regularPrice || 0),
+        }))
+      : [];
+
+    // Mongoose schema status enum matching: "Active" | "Draft" | "Out of Stock" | "Low Stock"
+    let status = "Draft";
+    if (body.status === "In Stock" || body.status === "Active") {
+      status = "Active";
+    } else if (body.status === "Out of Stock") {
+      status = "Out of Stock";
+    } else if (body.status === "Low Stock") {
+      status = "Low Stock";
+    } else if (body.status === "Draft") {
+      status = "Draft";
+    }
+
     // ডাটাবেসে নতুন প্রোডাক্ট এন্ট্রি
     const newProduct = await Product.create({
       ...body,
+      sizes,
+      status,
       slug,
     });
 
